@@ -1,8 +1,19 @@
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import React from 'react'
-import { statusOptions } from './data'
+import { useCyclesContext } from '../../contexts/CyclesContext'
 import { HistoryContainer, HistoryTable, Status } from './styles'
+import { StatusOption } from './types'
+
+const statusOptions = {
+  ON_GOING: { text: 'Em andamento', color: 'yellow' },
+  INTERRUPTED: { text: 'Interrompido', color: 'red' },
+  FINISHED: { text: 'Concluído', color: 'green' },
+}
 
 export const History: React.FC = () => {
+  const { cycles } = useCyclesContext()
+
   return (
     <HistoryContainer>
       <h1>Meu histórico</h1>
@@ -19,20 +30,42 @@ export const History: React.FC = () => {
           </thead>
 
           <tbody>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((id) => {
-              const status = statusOptions[id % 3]
+            {cycles.map(
+              ({
+                id,
+                minutesAmount,
+                task,
+                startedAt,
+                interruptedAt,
+                finishedAt,
+              }) => {
+                let statusOptionKey = 'ON_GOING' as keyof typeof statusOptions
 
-              return (
-                <tr key={id}>
-                  <td>Projeto {id}</td>
-                  <td>{id * 5} minutos</td>
-                  <td>Há {id * 3} minutos</td>
-                  <td>
-                    <Status color={status.color}>{status.text}</Status>
-                  </td>
-                </tr>
-              )
-            })}
+                if (interruptedAt) {
+                  statusOptionKey = 'INTERRUPTED'
+                } else if (finishedAt) {
+                  statusOptionKey = 'FINISHED'
+                }
+
+                const status = statusOptions[statusOptionKey] as StatusOption
+
+                return (
+                  <tr key={id}>
+                    <td>{task}</td>
+                    <td>{minutesAmount} minutos</td>
+                    <td>
+                      {formatDistanceToNow(new Date(startedAt), {
+                        locale: ptBR,
+                        addSuffix: true,
+                      })}
+                    </td>
+                    <td>
+                      <Status color={status.color}>{status.text}</Status>
+                    </td>
+                  </tr>
+                )
+              },
+            )}
           </tbody>
         </table>
       </HistoryTable>
