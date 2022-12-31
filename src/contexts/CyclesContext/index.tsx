@@ -38,6 +38,11 @@ export const CyclesContextProvider: React.FC<CyclesContextProviderProps> = ({
       if (storedStateAsJSON) {
         return JSON.parse(storedStateAsJSON)
       }
+
+      return {
+        cycles: [],
+        activeCycleId: null,
+      }
     },
   )
 
